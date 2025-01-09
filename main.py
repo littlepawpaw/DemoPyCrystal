@@ -98,7 +98,7 @@ class Cell:
         ])
         neighbor_points = []
         for shift in neighbor_shifts:
-            neighbor_points.extend(lattice_points + np.dot(shift, self.matrix))
+            neighbor_points.extend(lattice_points + np.matmul(self.matrix, shift))
         neighbor_points = np.array(neighbor_points)
 
         # Create a Voronoi diagram around the origin
