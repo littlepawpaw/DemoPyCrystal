@@ -23,6 +23,12 @@ class Cell:
                                  [1, 0, 1],
                                  [0, 1, 1],
                                  [1, 1, 1]])
+        # self.lattice = np.array([
+        #     [i, j, k]
+        #     for k in [0, 1]
+        #     for j in [0, 1]
+        #     for i in [0, 1]
+        # ])
         self.edge = np.array([[0, 1], [0, 2], [1, 3], [2, 3],
                               [0, 4], [1, 5], [2, 6], [3, 7],
                               [4, 5], [4, 6], [5, 7], [6, 7]])
@@ -46,17 +52,18 @@ class Cell:
     def plot(self, r=0.05, repeat=(0, 0, 0), ws=False):
         # Create a PyVista plotter
         plotter = self.plotter
+        lattice_points = self.cartesian()
 
         # Plot the lattice points as spheres
         for point in self.cartesian():
             sphere = pv.Sphere(radius=r, center=point)
             plotter.add_mesh(sphere, color='blue', smooth_shading=True)
 
-        # Optionally, add the edges to represent the cell boundaries
+        # Add the edges to represent the cell boundaries
         cell_edges = self.edge
         lines = []
         for edge in cell_edges:
-            lines.append([self.cartesian()[edge[0]], self.cartesian()[edge[1]]])
+            lines.append([lattice_points[edge[0]], lattice_points[edge[1]]])
 
         # Convert to PolyData format for lines
         lines = np.array(lines)
@@ -67,11 +74,11 @@ class Cell:
             for j in range(repeat[1] + 1):
                 for k in range(repeat[2] + 1):
                     if i or j or k:
-                        # Calculate the translation for this unit cell copy
+                        # Calculate the translation vector
                         translation = np.matmul(self.matrix, np.array([i, j, k]))
 
                         # Translate the original lattice points
-                        translated_points = self.cartesian() + translation
+                        translated_points = lattice_points + translation
 
                         # Plot the translated points as spheres
                         for point in translated_points:
@@ -83,7 +90,6 @@ class Cell:
         if ws:
             self.ws_cell()
 
-        plotter.show()
 
     def ws_cell(self):
         plotter = self.plotter
@@ -109,10 +115,10 @@ class Cell:
         ws_region_idx = vor.point_region[origin_index]
         ws_region = vor.regions[ws_region_idx]
 
-        # Filter out unbounded regions (-1)
-        if -1 in ws_region:
-            print("The Wigner-Seitz cell contains unbounded regions. Please adjust the lattice range.")
-            return
+        # # Filter out unbounded regions (-1)
+        # if -1 in ws_region:
+        #     print("The Wigner-Seitz cell contains unbounded regions. Please adjust the lattice range.")
+        #     return
 
         # Get the vertices corresponding to the WS cell region
         ws_cell_vertices = vor.vertices[ws_region]
@@ -133,6 +139,27 @@ class Cell:
 
         # Add the WS cell to the plotter
         plotter.add_mesh(ws_cell, color='green', opacity=0.5, show_edges=False)
+
+    def plane(self, h: int, k: int, l: int, size=1.0):
+        # Reciprocal lattice vector
+        g = np.array([h / self.a, k / self.b, l / self.c])
+
+        # Plane normal in Cartesian coordinates
+        normal = np.matmul(self.matrix.T, g)
+
+        # Create a plane centered at the origin with the given normal
+        plane = pv.Plane(
+            center=[h, k, l],
+            direction=normal,
+            i_size=size * self.a,
+            j_size=size * self.b
+        )
+
+        # Add the plane to the plotter
+        self.plotter.add_mesh(plane, opacity=0.8)
+
+    def show(self):
+        self.plotter.show()
 
 
 class SC(Cell):
@@ -160,12 +187,17 @@ class FCC(Cell):
 # sc = SC()
 # sc.plot(repeat=(1, 1, 1), ws=True)
 #
-bcc = BCC()
-bcc.plot(repeat=(1,1,1), ws=True)
+# bcc = BCC()
+# bcc.plot(repeat=(1,1,1), ws=True)
+# bcc.plane(0,0,1, size=5)
+# bcc.show()
 #
-# fcc = FCC(r=0.05)
-# fcc.plot(repeat=(1,1,1), ws=True)
+fcc = FCC()
+fcc.plot(repeat=(1,1,1), ws=True)
+fcc.plane(1,1,1, size=2)
+fcc.show()
 
-# cell = Cell(alpha=60, beta=60, gamma=60)
-# cell.plot(repeat=(1, 1, 1), ws=True)
+
+# cell = Cell(alpha=80, beta=80, gamma=80)
+# cell.plot(repeat=(2, 2, 2), ws=True)
 
