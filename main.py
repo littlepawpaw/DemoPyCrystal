@@ -1,3 +1,4 @@
+from itertools import combinations
 import numpy as np
 import scipy
 import pyvista as pv
@@ -157,6 +158,10 @@ class Cell:
 
         # Add the plane to the plotter
         self.plotter.add_mesh(plane, opacity=0.8)
+    
+
+    def clear(self):
+        self.plotter = pv.Plotter()
 
     def show(self):
         self.plotter.show()
@@ -187,15 +192,19 @@ class FCC(Cell):
 # sc = SC()
 # sc.plot(repeat=(1, 1, 1), ws=True)
 #
-# bcc = BCC()
+bcc = BCC()
 # bcc.plot(repeat=(1,1,1), ws=True)
 # bcc.plane(0,0,1, size=5)
 # bcc.show()
 #
-fcc = FCC()
-fcc.plot(repeat=(1,1,1), ws=True)
-fcc.plane(1,1,1, size=2)
-fcc.show()
+# fcc = FCC()
+# fcc.plot(repeat=(1,1,1), ws=True)
+# fcc.plane(1,1,1, size=2)
+# fcc.show()
+# fcc.clear()
+
+
+
 
 
 # cell = Cell(alpha=80, beta=80, gamma=80)
